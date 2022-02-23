@@ -16,13 +16,10 @@ describe('App e2e', () => {
         whitelist: true,
       }),
     );
-    console.log('BEFOREALL');
     await app.init();
-    console.log('BEFOREALL 1');
   });
 
   afterAll(() => {
-    console.log('AFTERALL');
     app.close();
   });
 
