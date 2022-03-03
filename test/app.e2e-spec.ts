@@ -10,7 +10,7 @@ describe('App e2e', () => {
       imports: [AppModule],
     }).compile();
 
-    const app = moduleRef.createNestApplication();
+    app = moduleRef.createNestApplication();
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
