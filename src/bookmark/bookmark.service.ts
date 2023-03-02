@@ -38,4 +38,17 @@ export class BookmarkService {
     //   }
     // });
   }
+
+  async getAll(user: User): Promise<{ data: Bookmark[]; success: boolean }> {
+    const data = await this.prisma.bookmark.findMany({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    return {
+      data,
+      success: true,
+    };
+  }
 }

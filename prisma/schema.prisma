@@ -18,7 +18,8 @@ model User {
   email String  @unique
   hash  String?
 
-  bookmarks Bookmark[]
+  Bookmark   Bookmark[]
+  Collection Collection[]
 
   @@map("users")
 }
@@ -30,10 +31,53 @@ model Bookmark {
 
   title       String
   description String?
-  link        String
+  url         String
+  archived    Boolean @default(false)
 
   userId Int
   user   User @relation(fields: [userId], references: [id])
 
+  Collection   Collection?   @relation(fields: [collectionId], references: [id])
+  collectionId Int?
+  BookmarkTag  BookmarkTag[]
+
   @@map("bookmarks")
+}
+
+model Collection {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String
+  description String?
+
+  bookmarks Bookmark[]
+
+  User   User? @relation(fields: [userId], references: [id])
+  userId Int?
+}
+
+model Tag {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String @unique
+
+  BookmarkTag BookmarkTag[]
+}
+
+model BookmarkTag {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookmarkId Int
+  bookmark   Bookmark @relation(fields: [bookmarkId], references: [id])
+
+  tagId Int
+  tag   Tag @relation(fields: [tagId], references: [id])
+
+  @@map("bookmark_tags")
 }
