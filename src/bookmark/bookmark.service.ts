@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from './../prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { Bookmark, User } from '@prisma/client';
+import { Bookmark, Collection, User } from '@prisma/client';
 
 @Injectable()
 export class BookmarkService {
@@ -24,31 +24,168 @@ export class BookmarkService {
         success: true,
       };
     } catch (err) {
-      // if (err instanceof PrismaClientKnownRequestError) {
-      //   if (err.code === 'P2002') {
-      //     throw new ForbiddenException('Credentials Taken');
-      //   }
-      // }
       console.log(err);
     }
-    // const { data, success } = await this.prisma.bookmark.create({
-    //   data: {
-    //     ...bookmark,
-
-    //   }
-    // });
   }
 
-  async getAll(user: User): Promise<{ data: Bookmark[]; success: boolean }> {
-    const data = await this.prisma.bookmark.findMany({
-      where: {
-        userId: user.id,
-      },
-    });
+  async getAll(user: User): Promise<{
+    data: { collections: Collection[]; bookmarks: Bookmark[] };
+    success: boolean;
+  }> {
+    try {
+      const collections = await this.prisma.collection.findMany({
+        where: {
+          userId: user.id,
+        },
+        include: {
+          bookmarks: true,
+        },
+      });
 
-    return {
-      data,
-      success: true,
-    };
+      const bookmarks = await this.prisma.bookmark.findMany({
+        where: {
+          userId: user.id,
+          collectionId: null,
+        },
+      });
+
+      const data = { collections, bookmarks };
+
+      return {
+        data,
+        success: true,
+      };
+    } catch (err) {
+      console.log(err);
+      return {
+        data: null,
+        success: false,
+      };
+    }
+  }
+
+  async getCollections(
+    user: User,
+  ): Promise<{ data: Collection[]; success: boolean }> {
+    try {
+      const data = await this.prisma.collection.findMany({
+        where: {
+          userId: user.id,
+        },
+        include: {
+          bookmarks: true,
+        },
+      });
+
+      return {
+        data,
+        success: true,
+      };
+    } catch (err) {
+      console.log(err);
+      return {
+        data: null,
+        success: false,
+      };
+    }
+  }
+
+  async addBookmarkToCollection(
+    bookmarkId: number,
+    collectionId: number,
+  ): Promise<{ data: Bookmark; success: boolean }> {
+    try {
+      const data = await this.prisma.bookmark.update({
+        where: {
+          id: bookmarkId,
+        },
+        data: {
+          collectionId,
+        },
+      });
+
+      return {
+        data,
+        success: true,
+      };
+    } catch (err) {
+      console.log(err);
+      return {
+        data: null,
+        success: false,
+      };
+    }
+  }
+
+  async removeBookmarkFromCollection(
+    bookmarkId: number,
+  ): Promise<{ data: Bookmark; success: boolean }> {
+    try {
+      const data = await this.prisma.bookmark.update({
+        where: {
+          id: bookmarkId,
+        },
+        data: {
+          collectionId: null,
+        },
+      });
+
+      return {
+        data,
+        success: true,
+      };
+    } catch (err) {
+      console.log(err);
+      return {
+        data: null,
+        success: false,
+      };
+    }
+  }
+
+  async deleteBookmark(
+    bookmarkId: number,
+  ): Promise<{ data: Bookmark; success: boolean }> {
+    try {
+      const data = await this.prisma.bookmark.delete({
+        where: {
+          id: bookmarkId,
+        },
+      });
+
+      return {
+        data,
+        success: true,
+      };
+    } catch (err) {
+      console.log(err);
+      return {
+        data: null,
+        success: false,
+      };
+    }
+  }
+
+  async deleteCollection(
+    collectionId: number,
+  ): Promise<{ data: Collection; success: boolean }> {
+    try {
+      const data = await this.prisma.collection.delete({
+        where: {
+          id: collectionId,
+        },
+      });
+
+      return {
+        data,
+        success: true,
+      };
+    } catch (err) {
+      console.log(err);
+      return {
+        data: null,
+        success: false,
+      };
+    }
   }
 }
