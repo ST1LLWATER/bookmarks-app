@@ -1,6 +1,14 @@
 import { JwtGuard } from './../auth/guard';
 import { BookmarkService } from './bookmark.service';
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { Bookmark, User } from '@prisma/client';
 import { GetUser } from '../auth/decorators';
 
@@ -19,17 +27,23 @@ export class BookmarkController {
     return this.bookmarkService.getAll(user);
   }
 
+  @Patch('update')
+  update(@Body() bookmark: Bookmark) {
+    return this.bookmarkService.updateBookmark(bookmark);
+  }
+
+  @Delete('delete')
+  delete(@Body() bookmarkId: number) {
+    return this.bookmarkService.deleteBookmark(bookmarkId);
+  }
+
   @Get('collections')
   getCollections(@GetUser() user: User) {
     return this.bookmarkService.getCollections(user);
   }
 
   @Post('collection/add')
-  addToCollection(
-    @Body() collectionId: number,
-    bookmarkId: number,
-    @GetUser() user: User,
-  ) {
+  addToCollection(@Body() collectionId: number, bookmarkId: number) {
     return this.bookmarkService.addBookmarkToCollection(
       collectionId,
       bookmarkId,

@@ -64,6 +64,32 @@ export class BookmarkService {
     }
   }
 
+  async updateBookmark(
+    bookmark: Bookmark,
+  ): Promise<{ data: Bookmark; success: boolean }> {
+    try {
+      const data = await this.prisma.bookmark.update({
+        where: {
+          id: bookmark.id,
+        },
+        data: {
+          ...bookmark,
+        },
+      });
+
+      return {
+        data,
+        success: true,
+      };
+    } catch (err) {
+      console.log(err);
+      return {
+        data: null,
+        success: false,
+      };
+    }
+  }
+
   async getCollections(
     user: User,
   ): Promise<{ data: Collection[]; success: boolean }> {
