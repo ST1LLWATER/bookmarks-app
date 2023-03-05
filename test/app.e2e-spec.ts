@@ -1,5 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 
 describe('App e2e', () => {
@@ -19,9 +20,22 @@ describe('App e2e', () => {
     await app.init();
   });
 
+  it('POST /auth/signup (should create a new user)', () => {
+    const user = {
+      email: 'test@example.com',
+      password: 'password',
+    };
+
+    return request(app.getHttpServer())
+      .post('/auth/signup')
+      .send(user)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty('accessToken');
+      });
+  });
+
   afterAll(() => {
     app.close();
   });
-
-  it.todo('Should Pass');
 });

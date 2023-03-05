@@ -2,6 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from './../prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { Bookmark, Collection, User } from '@prisma/client';
+import { CollectionDto } from './dto';
 
 @Injectable()
 export class BookmarkService {
@@ -77,6 +78,30 @@ export class BookmarkService {
         },
       });
 
+      return {
+        data,
+        success: true,
+      };
+    } catch (err) {
+      console.log(err);
+      return {
+        data: null,
+        success: false,
+      };
+    }
+  }
+
+  async createCollection(
+    collection: CollectionDto,
+    user: User,
+  ): Promise<{ data: Collection; success: boolean }> {
+    try {
+      const data = await this.prisma.collection.create({
+        data: {
+          ...collection,
+          userId: user.id,
+        },
+      });
       return {
         data,
         success: true,

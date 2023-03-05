@@ -1,3 +1,4 @@
+import { CollectionDto } from './dto/collection.dto';
 import { JwtGuard } from './../auth/guard';
 import { BookmarkService } from './bookmark.service';
 import {
@@ -40,6 +41,11 @@ export class BookmarkController {
   @Get('collections')
   getCollections(@GetUser() user: User) {
     return this.bookmarkService.getCollections(user);
+  }
+
+  @Post('collection/create')
+  createCollection(@Body() collection: CollectionDto, @GetUser() user: User) {
+    return this.bookmarkService.createCollection(collection, user);
   }
 
   @Post('collection/add')
