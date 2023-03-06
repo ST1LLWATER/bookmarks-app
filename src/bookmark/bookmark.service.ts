@@ -9,14 +9,46 @@ export class BookmarkService {
   constructor(private prisma: PrismaService, private config: ConfigService) {}
 
   async create(
-    bookmark: Bookmark,
+    bookmark: Bookmark & { tags: string[] },
     user: User,
   ): Promise<{ data: Bookmark; success: boolean }> {
     try {
+      const { tags, ...bookmarkPayload } = bookmark;
       const data = await this.prisma.bookmark.create({
         data: {
-          ...bookmark,
+          ...bookmarkPayload,
           userId: user.id,
+        },
+      });
+
+      if (tags.length > 0) {
+        const tagPayload = tags.map((tag) => ({
+          tag: tag.toLocaleLowerCase(),
+          bookmarkId: data.id,
+        }));
+
+        await this.prisma.tag.createMany({
+          data: tagPayload,
+        });
+      }
+
+      return {
+        data,
+        success: true,
+      };
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async getBookmarks(
+    user: User,
+  ): Promise<{ data: Bookmark[]; success: boolean }> {
+    try {
+      const data = await this.prisma.bookmark.findMany({
+        where: {
+          userId: user.id,
+          collectionId: null,
         },
       });
 
@@ -26,6 +58,10 @@ export class BookmarkService {
       };
     } catch (err) {
       console.log(err);
+      return {
+        data: null,
+        success: false,
+      };
     }
   }
 

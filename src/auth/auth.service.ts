@@ -3,7 +3,6 @@ import { PrismaService } from './../prisma/prisma.service';
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { AuthDto } from './dto';
 import * as argon from 'argon2';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
@@ -17,19 +16,29 @@ export class AuthService {
   async signup(dto: AuthDto) {
     const hash = await argon.hash(dto.password);
     try {
-      const user = await this.prisma.user.create({
+      let user = await this.prisma.user.findUnique({
+        where: {
+          email: dto.email,
+        },
+      });
+
+      user = await this.prisma.user.create({
         data: {
           email: dto.email,
           hash,
         },
       });
 
-      return this.signToken(user.id, user.email);
+      const access_token = await this.signToken(user.id, user.email);
+
+      return {
+        access_token,
+        id: user.id,
+        email: user.email,
+      };
     } catch (err) {
-      if (err instanceof PrismaClientKnownRequestError) {
-        if (err.code === 'P2002') {
-          throw new ForbiddenException('Email already in use');
-        }
+      if (err.code === 'P2002') {
+        throw new ForbiddenException('Email already in use');
       }
       throw err;
     }
@@ -52,13 +61,16 @@ export class AuthService {
       throw new ForbiddenException('Credentials Incorrect');
     }
 
-    return this.signToken(user.id, user.email);
+    const access_token = await this.signToken(user.id, user.email);
+
+    return {
+      access_token,
+      id: user.id,
+      email: user.email,
+    };
   }
 
-  async signToken(
-    userId: number,
-    email: string,
-  ): Promise<{ access_token: string }> {
+  async signToken(userId: number, email: string): Promise<string> {
     const payload = {
       sub: userId,
       email,
@@ -71,8 +83,6 @@ export class AuthService {
       secret,
     });
 
-    return {
-      access_token: token,
-    };
+    return token;
   }
 }

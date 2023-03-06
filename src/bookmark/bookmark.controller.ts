@@ -18,14 +18,22 @@ import { GetUser } from '../auth/decorators';
 export class BookmarkController {
   constructor(private bookmarkService: BookmarkService) {}
 
-  @Post('create')
-  create(@Body() bookmark: Bookmark, @GetUser() user: User) {
-    return this.bookmarkService.create(bookmark, user);
-  }
-
   @Get('all')
   getAll(@GetUser() user: User) {
     return this.bookmarkService.getAll(user);
+  }
+
+  @Post('create')
+  create(
+    @Body() bookmark: Bookmark & { tags: string[] },
+    @GetUser() user: User,
+  ) {
+    return this.bookmarkService.create(bookmark, user);
+  }
+
+  @Get('bookmarks')
+  getBookmarks(@GetUser() user: User) {
+    return this.bookmarkService.getBookmarks(user);
   }
 
   @Patch('update')

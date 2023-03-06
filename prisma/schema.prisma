@@ -35,11 +35,11 @@ model Bookmark {
   archived    Boolean @default(false)
 
   userId Int
-  user   User @relation(fields: [userId], references: [id])
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  Collection   Collection?   @relation(fields: [collectionId], references: [id])
+  Collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: Cascade)
   collectionId Int?
-  BookmarkTag  BookmarkTag[]
+  tags         Tag[]
 
   @@map("bookmarks")
 }
@@ -54,7 +54,7 @@ model Collection {
 
   bookmarks Bookmark[]
 
-  User   User? @relation(fields: [userId], references: [id])
+  User   User? @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId Int?
 }
 
@@ -63,21 +63,8 @@ model Tag {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name String @unique
-
-  BookmarkTag BookmarkTag[]
-}
-
-model BookmarkTag {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  tag String
 
   bookmarkId Int
-  bookmark   Bookmark @relation(fields: [bookmarkId], references: [id])
-
-  tagId Int
-  tag   Tag @relation(fields: [tagId], references: [id])
-
-  @@map("bookmark_tags")
+  bookmark   Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
 }
